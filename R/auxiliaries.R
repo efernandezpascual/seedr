@@ -19,7 +19,7 @@ physiotable <- function(d, t, g, pg, x, reps = NULL, groups = NULL)
 #' @export
 #' @import binom
 
-proportions <- function(d, x, reps = NULL)
+proportions <- function(d, x, reps = NULL) # This function calculates binomials!
 {
   d1 <- d[, .(germinated = max(cumulative), germinable = max(germinable)), by = c(x, reps)]
   d1 <- d1[, .(germinated = sum(germinated), germinable = sum(germinable)), by = x]

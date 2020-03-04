@@ -58,7 +58,7 @@
 
 physiotime <- function(d, t, g, pg, x, reps = NULL, groups = NULL, method)
 {
-  d <- physiotable(d, t, g, pg, x, reps, groups)
+  d <- physiotable(d, t, g, pg, x, reps, groups) #
   if(is.null(groups)) {
     z <- get(method)(d, t, g, pg, x, reps)
   } else {
