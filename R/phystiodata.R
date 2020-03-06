@@ -1,37 +1,41 @@
-physiodata <- function(d, t = "times", g = "germinated", pg = "germinable", x = "temperature", reps = NULL, groups = NULL)
+#' @export
+
+physiodata <- function(d, t = "times", g = "germinated", pg = "germinable", x = "temperature", groups = NULL)
 {
   dd <- data.table(d)
+  setnames(dd, c(t, x), c("time", "treatment"))
   dd <- dd[, .(germinated = sum(get(g)), germinable = sum(get(pg))),
-           by = c(reps, groups, x, t)]
-  dd[, germinable := max(germinable), by = c(x, reps, groups)]
-  setorderv(dd, c(reps, groups, x, t))
-  dd[, cumulative := cumsum(get(g)), by = c(x, reps, groups)]
+           by = c(groups, "treatment", "time")]
+  dd[, germinable := max(germinable), by = c("treatment", groups)]
+  setorderv(dd, c(groups, "treatment", "time"))
+  dd[, cumulative := cumsum(get(g)), by = c("treatment", groups)]
   bci <- binom::binom.confint(dd$cumulative, dd$germinable, method = "wilson")
   dd <- cbind(dd, germination = bci[4:6])
-  l <- list(data = dd, t = t, x = x, reps = reps, groups = groups)
+  l <- list(data = dd, groups = groups)
   class(l) <- "physiodata"
   l
 }
+
+# physiodata generic functions
+
+#' @export
 
 print.physiodata <- function(d)
 {
   print(d$data)
 }
 
+#' @export
+
 summary.physiodata <- function(d)
 {
-  dd <- d$data[(get(d$t) == max(get(d$t))),
-               list(times = get(d$t), germination.mean, germination.lower, germination.upper),
-               by = c(d$groups, d$x, d$reps)]
-
-  dd <- d$data[d$data[, .I[(get(d$t) == max(get(d$t)))], by = c(d$groups, d$x, d$reps)]$V1]
-
-  dd <- dd[, list(species = get(d$group), treatment = get(d$x), reps = get(d$reps), times = get(d$t), germination.mean, germination.lower, germination.upper)]
-
-
-  setorderv(dd, c(d$groups, d$x, d$reps))
+  dd <- d$data[d$data[, .I[(time == max(time))], by = c(d$groups, "treatment")]$V1]
+  dd[, c("germinated", "germinable", "cumulative") := NULL][]
+  setorderv(dd, c(d$groups, "treatment"))
   dd
 }
+
+#' @export
 
 barplot.physiodata <- function(d, x.lab = "Treatment")
 {
@@ -42,7 +46,7 @@ barplot.physiodata <- function(d, x.lab = "Treatment")
   par(ask = TRUE)
   for(i in seq_along(listd)) {
     p <- barplot(listd[[i]]$germination.mean,
-                 names.arg = as.numeric(listd[[i]][, get(d$x)]),
+                 names.arg = as.numeric(listd[[i]][, treatment]),
                  ylim = c(0, 1),
                  xlab = x.lab,
                  ylab = "Final germination proportion")
@@ -53,7 +57,7 @@ barplot.physiodata <- function(d, x.lab = "Treatment")
     }
   par(ask = ask.status)} else{
     p <- barplot(dd$germination.mean,
-                 names.arg = as.numeric(dd[, get(d$x)]),
+                 names.arg = as.numeric(dd[, treatment]),
                  ylim = c(0, 1),
                  xlab = x.lab,
                  ylab = "Final germination proportion")
@@ -63,6 +67,8 @@ barplot.physiodata <- function(d, x.lab = "Treatment")
   }
 }
 
+#' @export
+
 plot.physiodata <- function(d)
 {
   if(! is.null(d$groups)){
@@ -70,11 +76,11 @@ plot.physiodata <- function(d)
     ask.status <- par()$ask
     par(ask = TRUE)
     for(i in seq_along(listd)) {
-      colnumber <-listd[[i]][, .(n = length(unique( get(d$x))))][[1]]
+      colnumber <- listd[[i]][, .(n = length(unique(treatment)))][[1]]
       colramp <- colorRampPalette(c("violet", "blue", "green",
                                     "yellow", "orange", "red"))
-      x <- split(listd[[i]]$time, listd[[i]][, get(d$x)])
-      y <- split(listd[[i]]$germination.mean, listd[[i]][, get(d$x)])
+      x <- split(listd[[i]]$time, listd[[i]][, treatment])
+      y <- split(listd[[i]]$germination.mean, listd[[i]][, treatment])
       xpd.status <- par()$xpd
       mar.status <- par()$mar
       par(xpd = TRUE)
@@ -82,19 +88,19 @@ plot.physiodata <- function(d)
       plot(1 : max(unlist(x)), ylim = (c(0, 1)), type = "n",
            xlab = "Time", ylab = "Final germination proportion")
       mapply(lines, x, y, col = colramp(colnumber), pch = 16, type = "o")
-      legend(max(listd[[i]][, get(d$t)]) + max(listd[[i]][, get(d$t)])*.05, 1.1,
+      legend(max(listd[[i]][, time]) + max(listd[[i]][, time])*.05, 1.1,
              title = "Treatment",
-             legend = levels(as.factor(round(listd[[i]][, get(d$x)], 1))), pch = 16,
+             legend = levels(as.factor(round(listd[[i]][, treatment], 1))), pch = 16,
              col = colramp(colnumber), lwd = 1, lty = 1)
       par(xpd = xpd.status)
       par(mar = mar.status)
       title(names(listd)[i])}
     par(ask = ask.status)} else{
-      colnumber <- d$data[, .(n = length(unique( get(d$x))))][[1]]
+      colnumber <- d$data[, .(n = length(unique(treatment)))][[1]]
       colramp <- colorRampPalette(c("violet", "blue", "green",
                                     "yellow", "orange", "red"))
-      x <- split(d$data$time, d$data[, get(d$x)])
-      y <- split(d$data$germination.mean, d$data[, get(d$x)])
+      x <- split(d$data$time, d$data[, treatment])
+      y <- split(d$data$germination.mean, d$data[, treatment])
       xpd.status <- par()$xpd
       mar.status <- par()$mar
       par(xpd = TRUE)
@@ -102,9 +108,9 @@ plot.physiodata <- function(d)
       plot(1 : max(unlist(x)), ylim = (c(0, 1)), type = "n",
            xlab = "Time", ylab = "Final germination proportion")
       mapply(lines, x, y, col = colramp(colnumber), pch = 16, type = "o")
-      legend(max(d$data[, get(d$t)]) + max(d$data[, get(d$t)])*.05, 1.1,
+      legend(max(d$data[, time]) + max(d$data[, time])*.05, 1.1,
              title = "Treatment",
-             legend = levels(as.factor(round(d$data[, get(d$x)], 1))), pch = 16,
+             legend = levels(as.factor(round(d$data[, treatment], 1))), pch = 16,
              col = colramp(colnumber), lwd = 1, lty = 1)
       par(xpd = xpd.status)
       par(mar = mar.status)}
