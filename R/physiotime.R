@@ -60,9 +60,9 @@ physiotime <- function(d, t = "times", g = "germinated", pg = "germinable", x = 
 {
   d <- physiodata(d, t, g, pg, x, groups)
   if(is.null(groups)) {
-    z <- get(method)(d$data)
+    z <- get(method)(d$proportions)
   } else {
-    listd <- split(d$data, by = groups, drop = TRUE)
+    listd <- split(d$proportions, by = groups, drop = TRUE)
     z <- lapply(listd, function(d) {
       zi <- get(method)(d)
       zi$groups <- unique(d[, ..groups])
