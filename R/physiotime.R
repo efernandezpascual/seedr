@@ -53,10 +53,13 @@
 #'                      pg = "germinable", x = "psi", reps = "dish",
 #'                      groups = c("species", "temperature"),
 #'                      method = "bradford")
-#' @import data.table
+#' @import data.table binom
 #' @export
 
-physiotime <- function(d, t = "times", g = "germinated", pg = "germinable", x = "treatment", groups = NULL, method = "bradford")
+physiotime <- function(d, t = "times", g = "germinated", pg = "germinable",
+                       x = "treatment", groups = NULL, method = "bradford",
+                       min.ptos = 3, tops = c("Max R2","Max value"),
+                       fractions = (1:9)/10, extrapolate.prange = 1)
 {
   d <- physiodata(d, t, g, pg, x, groups)
   if(is.null(groups)) {
@@ -99,7 +102,7 @@ summary.physiotime <- function(d)
 
 #' @export
 
-plot.physiotime <- function(d, treatment) # Plots Bradford's model
+plot.physiotime <- function(d) # Plots Bradford's model
 {
   ask.status <- par()$ask
   par(ask = TRUE)

@@ -116,7 +116,7 @@ summary.bradford <- function(y)
 
 #' @export
 
-plot.bradford <- function(d, treatment) # Plots Bradford's model
+plot.bradford <- function(d) # Plots Bradford's model
 {
   colnumber <- length(unique(d$data$treatment))
   colramp <- colorRampPalette(c("red", "orange", "yellow",

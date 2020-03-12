@@ -1,6 +1,6 @@
 #' @export
 
-physiodata <- function(d, t = "times", g = "germinated", pg = "germinable", x = "temperature", groups = NULL, fractions = (1:9)/10, extrapolate.prange = 1)
+physiodata <- function(d, t = "times", g = "germinated", pg = "germinable", x = "treatment", groups = NULL)
 {
   dd <- data.table(d)
   setnames(dd, c(t, x), c("time", "treatment"))
@@ -11,12 +11,10 @@ physiodata <- function(d, t = "times", g = "germinated", pg = "germinable", x = 
   dd[, cumulative := cumsum(get(g)), by = c("treatment", groups)]
   bci <- binom::binom.confint(dd$cumulative, dd$germinable, method = "wilson")
   dd <- cbind(dd, germination = bci[4:6])
-  rates <- dd[, .(fraction =  fractions, rate = rates(d = .SD, fractions = fractions, extrapolate.prange = extrapolate.prange)), by = c(groups, "treatment")]
-  l <- list(proportions = dd, rates = rates, groups = groups)
+  l <- list(proportions = dd, groups = groups)
   class(l) <- "physiodata"
   l
 }
-
 
 rates <- function(d, fractions = (1:9)/10, extrapolate.prange = 1)
 {
@@ -64,9 +62,8 @@ summary.physiodata <- function(d)
   dd <- d$proportions[d$proportions[, .I[(time == max(time))], by = c(d$groups, "treatment")]$V1]
   dd[, c("germinated", "germinable", "cumulative") := NULL][]
   setorderv(dd, c(d$groups, "treatment"))
-  dd
-  dr <- d$rates[d$rates[, .I[(fraction == median(fraction))], by = c(d$groups, "treatment")]$V1]
-  cbind(dd, dr[, list(fraction, rate)])
+  dr <- d$proportions[, .(r50 = rates(d = .SD, fractions = 0.5, extrapolate.prange = 1)), by = c(d$groups, "treatment")]
+  cbind(dd, dr[, list(r50)])
 }
 
 #' @export
@@ -90,10 +87,10 @@ barplot.physiodata <- function(d, x.lab = "Treatment")
     segments(p, listd[[i]]$germination.lower, p, listd[[i]]$germination.upper)
     arrows(p, listd[[i]]$germination.lower, p, listd[[i]]$germination.upper,
            lwd = 1.5, angle = 90, code = 3, length = 0.05)
-    barplot(listd[[i]]$rate,
+    barplot(listd[[i]]$r50,
             names.arg = as.numeric(listd[[i]][, treatment]),
             xlab = x.lab,
-            ylab = paste("Germination rate of the", unique(listd[[i]][, fraction]), "fraction"))
+            ylab = paste("Median germination rate"))
     mtext(names(listd)[i], line = 0, side = 3, outer = TRUE)
     par(mfrow = mfrow.status)
     par(oma = oma.status)
@@ -109,10 +106,10 @@ barplot.physiodata <- function(d, x.lab = "Treatment")
     segments(p, dd$germination.lower, p, dd$germination.upper)
     arrows(p, dd$germination.lower, p, dd$germination.upper,
            lwd = 1.5, angle = 90, code = 3, length = 0.05)
-    barplot(dd$rate,
+    barplot(dd$r50,
             names.arg = as.numeric(dd[, treatment]),
             xlab = x.lab,
-            ylab = paste("Germination rate of the", unique(dd$fraction), "fraction"))
+            ylab = paste("Median germination rate"))
     par(mfrow = mfrow.status)
   }
 }
@@ -136,7 +133,7 @@ plot.physiodata <- function(d)
       par(xpd = TRUE)
       par(mar = mar.status + c(0, 0, 0, 4))
       plot(1 : max(unlist(x)), ylim = (c(0, 1)), type = "n",
-           xlab = "Time", ylab = "Final germination proportion")
+           xlab = "Time", ylab = "Germination proportion")
       mapply(lines, x, y, col = colramp(colnumber), pch = 16, type = "o")
       legend(max(listd[[i]][, time]) + max(listd[[i]][, time])*.05, 1.1,
              title = "Treatment",
@@ -156,7 +153,7 @@ plot.physiodata <- function(d)
       par(xpd = TRUE)
       par(mar = mar.status + c(0, 0, 0, 4))
       plot(1 : max(unlist(x)), ylim = (c(0, 1)), type = "n",
-           xlab = "Time", ylab = "Final germination proportion")
+           xlab = "Time", ylab = "Germination proportion")
       mapply(lines, x, y, col = colramp(colnumber), pch = 16, type = "o")
       legend(max(d$proportions[, time]) + max(d$proportions[, time])*.05, 1.1,
              title = "Treatment",

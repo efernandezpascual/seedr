@@ -20,3 +20,7 @@ LazyData: true
 RoxygenNote: 7.0.2
 Imports: 
     data.table
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
