@@ -1,13 +1,14 @@
 Package: seedr
 Type: Package
 Title: Hydro and Thermal Time Seed Germination Models
-Version: 0.1.0.9004
-Date: 2020-03-06
+Version: 0.1.0.9005
+Date: 2020-10-23
 Authors@R: c(
-    person("Fernández-Pascual", "Eduardo", email = "fernandezpeduardo@uniovi.es", 
+    person("Fernández-Pascual", "Eduardo", email = "efernandezpascual@gmail.com", 
       role = c("cre", "aut")),
-    person("González-Rodríguez", "Gil", email = "gil@uniovi.es", role = "aut"))
-Maintainer: Eduardo Fernández-Pascual <fernandezpeduardo@uniovi.es>
+    person("González-Rodríguez", "Gil", email = "gil@uniovi.es", role = "aut"),
+    person("Ladouceur", "Emma", email = "emmala@gmail.com", role = "ctb"))
+Maintainer: Eduardo Fernández-Pascual <efernandezpascual@gmail.com>
 Description: This package helps in analysing seed germination data
     using the physiological time modelling approach. It includes functions
     to fit hydrotime and thermal-time models with the traditional approaches
@@ -17,9 +18,10 @@ URL: http://github.com/efernandezpascual/seedr
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.2
-Imports: 
-    data.table
+RoxygenNote: 7.1.1
+Imports:
+    data.table,
+    binom
 Suggests: 
     knitr,
     rmarkdown

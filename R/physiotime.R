@@ -53,9 +53,7 @@
 #'                      pg = "germinable", x = "psi", reps = "dish",
 #'                      groups = c("species", "temperature"),
 #'                      method = "bradford")
-#' @import data.table binom
 #' @export
-
 physiotime <- function(d, t = "times", g = "germinated", pg = "germinable",
                        x = "treatment", groups = NULL, method = "bradford",
                        min.ptos = 3, tops = c("Max R2","Max value"),
@@ -80,7 +78,6 @@ physiotime <- function(d, t = "times", g = "germinated", pg = "germinable",
 # physiotime generic functions
 
 #' @export
-
 print.physiotime <- function(d)
 {
   cat("A list of physiological time germination models", "\n",
@@ -92,7 +89,6 @@ print.physiotime <- function(d)
 }
 
 #' @export
-
 summary.physiotime <- function(d)
 {
   l <- lapply(d, function(y) data.frame(
@@ -101,7 +97,6 @@ summary.physiotime <- function(d)
 }
 
 #' @export
-
 plot.physiotime <- function(d) # Plots Bradford's model
 {
   ask.status <- par()$ask

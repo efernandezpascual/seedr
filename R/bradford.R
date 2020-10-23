@@ -19,7 +19,6 @@
 #'   list with a summary of the experiment and the physiological time
 #'   parameters}}
 #' @export
-
 bradford <- function(d) tryCatch(
   {
     d <- d[! germination.mean %in% c(0, 1)]
@@ -45,20 +44,52 @@ bradford <- function(d) tryCatch(
     z
   }, error = function(e) e)
 
-#' Calculates Bradford's hydrotime constant (Theta).
-#'
-#' \code{bradtheta} calculates the population hydrotime constant (Theta)
-#'   using Bradford's method by solving EXPLICAR LOS CALCULOS de GIL. This
-#'   function is mainly used by \code{\link{bradford}} to perform its
-#'   calculations.
-#'
-#' @usage bradtheta(probit, x, invt)
-#' @param probit a vector of probit transformations of the cumulative germination proportion
-#' @param x a vector of water potentials of the experimental treatment
-#' @param invt a vector of the inverse of the germination scoring time since the start of
-#'   the experiment
-#' @return \code{bradtheta} returns the value of Theta and passes it back to \code{\link{bradford}}
+# bradford generic functions
 #' @export
+
+print.bradford <- function(y)
+{
+  cat("Bradford's hydrotime model", "\n",
+      "Water potential levels in experiment:",
+      round(y$parameters$levels, 1), "\n",
+      "Theta - Hydrotime constant:",
+      round(y$parameters$theta, 2), "\n",
+      "Psib50 - Base water potential (median):",
+      round((y$parameters$psib50), 2), "\n",
+      "Sigma of the base water potential:",
+      round(y$parameters$sigma, 2), "\n",
+      "R2:", round(y$parameters$R2, 2), "\n", "\n")
+}
+
+#' @export
+summary.bradford <- function(y)
+{
+  data.table(
+    method = class(y),
+    n.treatments = length(y$parameters$levels),
+    theta = y$parameters$theta,
+    psib50 = y$parameters$psib50,
+    sigma = y$parameters$sigma,
+    R2 = y$parameters$R2)
+}
+
+#' @export
+plot.bradford <- function(d) # Plots Bradford's model
+{
+  colnumber <- length(unique(d$data$treatment))
+  colramp <- colorRampPalette(c("red", "orange", "yellow",
+                                "green", "blue", "violet"))
+  d$data$color <- colramp(colnumber)[as.numeric(cut(d$data$treatment, breaks = colnumber))]
+
+  plot(d$data$psibg, d$data$probit, col = d$data$color, pch = 16,
+       xlab = expression(paste(psi[b], " (g)")), ylab = "Probit germination")
+  abline(lm(d$data$probit ~ d$data$psibg))
+  legend("topleft", title = expression(paste(psi, " (MPa)")),
+         legend = levels(as.factor(round(d$data$treatment, 1))), pch = 16,
+         col = colramp(colnumber))
+}
+
+# bradford internal functions
 
 bradtheta <- function(probit, x, invt) # Calculates Bradford's Theta
 {
@@ -81,52 +112,4 @@ bradtheta <- function(probit, x, invt) # Calculates Bradford's Theta
 
   max(c(( -b + sqrt(b ^ 2 - 4 * a * c))/(2 * a),
         (-b -sqrt(b ^ 2 - 4 * a * c))/(2 * a)))
-}
-
-# bradford generic functions
-
-#' @export
-
-print.bradford <- function(y)
-{
-  cat("Bradford's hydrotime model", "\n",
-      "Water potential levels in experiment:",
-      round(y$parameters$levels, 1), "\n",
-      "Theta - Hydrotime constant:",
-      round(y$parameters$theta, 2), "\n",
-      "Psib50 - Base water potential (median):",
-      round((y$parameters$psib50), 2), "\n",
-      "Sigma of the base water potential:",
-      round(y$parameters$sigma, 2), "\n",
-      "R2:", round(y$parameters$R2, 2), "\n", "\n")
-}
-
-#' @export
-
-summary.bradford <- function(y)
-{
-  data.table(
-    method = class(y),
-    n.treatments = length(y$parameters$levels),
-    theta = y$parameters$theta,
-    psib50 = y$parameters$psib50,
-    sigma = y$parameters$sigma,
-    R2 = y$parameters$R2)
-}
-
-#' @export
-
-plot.bradford <- function(d) # Plots Bradford's model
-{
-  colnumber <- length(unique(d$data$treatment))
-  colramp <- colorRampPalette(c("red", "orange", "yellow",
-                                "green", "blue", "violet"))
-  d$data$color <- colramp(colnumber)[as.numeric(cut(d$data$treatment, breaks = colnumber))]
-
-  plot(d$data$psibg, d$data$probit, col = d$data$color, pch = 16,
-       xlab = expression(paste(psi[b], " (g)")), ylab = "Probit germination")
-  abline(lm(d$data$probit ~ d$data$psibg))
-  legend("topleft", title = expression(paste(psi, " (MPa)")),
-         legend = levels(as.factor(round(d$data$treatment, 1))), pch = 16,
-         col = colramp(colnumber))
 }

@@ -1,5 +1,4 @@
 #' @export
-
 physiodata <- function(d, t = "times", g = "germinated", pg = "germinable", x = "treatment", groups = NULL)
 {
   dd <- data.table(d)
@@ -16,47 +15,15 @@ physiodata <- function(d, t = "times", g = "germinated", pg = "germinable", x = 
   l
 }
 
-rates <- function(d, fractions = (1:9)/10, extrapolate.prange = 1)
-{
-  pos <- c()
-  pos0 <- c()
-  for (i in 1:length(fractions))
-  {
-    posA <- match(FALSE, d$germination.mean < fractions[i], nomatch = NA)
-    pos0A <- posA - 1
-    if (is.na(posA))
-    {
-      posA <- length(d$germination.mean)
-      pos0A <- match(FALSE, d$germination.mean < d$germination.mean[posA], nomatch = NA) - 1
-    }
-    if (pos0A == 0)
-    {
-      posA <- match(FALSE, d$germination.mean <= fractions[i], nomatch = NA)
-      pos0A <- posA - 1
-    }
-    pos <- c(pos, posA)
-    pos0 <- c(pos0, pos0A)
-  }
-  p <- d$germination.mean[pos]
-  q <- d$germination.mean[pos0]
-  y <- d$time[pos]
-  x <- d$time[pos0]
-  r <- x + (fractions - q) * (y - x) / (p - q)
-  r[r > (extrapolate.prange * max(d$time))] <- NA
-  1/r
-}
-
 # physiodata generic functions
 
 #' @export
-
 print.physiodata <- function(d)
 {
   print(d$proportions)
 }
 
 #' @export
-
 summary.physiodata <- function(d)
 {
   dd <- d$proportions[d$proportions[, .I[(time == max(time))], by = c(d$groups, "treatment")]$V1]
@@ -67,7 +34,6 @@ summary.physiodata <- function(d)
 }
 
 #' @export
-
 barplot.physiodata <- function(d, x.lab = "Treatment")
 {
   dd <- summary(d)
@@ -115,7 +81,6 @@ barplot.physiodata <- function(d, x.lab = "Treatment")
 }
 
 #' @export
-
 plot.physiodata <- function(d)
 {
   if(! is.null(d$groups)){
@@ -163,3 +128,34 @@ plot.physiodata <- function(d)
       par(mar = mar.status)}
 }
 
+# physiodata generic functions
+
+rates <- function(d, fractions = (1:9)/10, extrapolate.prange = 1)
+{
+  pos <- c()
+  pos0 <- c()
+  for (i in 1:length(fractions))
+  {
+    posA <- match(FALSE, d$germination.mean < fractions[i], nomatch = NA)
+    pos0A <- posA - 1
+    if (is.na(posA))
+    {
+      posA <- length(d$germination.mean)
+      pos0A <- match(FALSE, d$germination.mean < d$germination.mean[posA], nomatch = NA) - 1
+    }
+    if (pos0A == 0)
+    {
+      posA <- match(FALSE, d$germination.mean <= fractions[i], nomatch = NA)
+      pos0A <- posA - 1
+    }
+    pos <- c(pos, posA)
+    pos0 <- c(pos0, pos0A)
+  }
+  p <- d$germination.mean[pos]
+  q <- d$germination.mean[pos0]
+  y <- d$time[pos]
+  x <- d$time[pos0]
+  r <- x + (fractions - q) * (y - x) / (p - q)
+  r[r > (extrapolate.prange * max(d$time))] <- NA
+  1/r
+}
