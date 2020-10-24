@@ -1,23 +1,37 @@
-# Bradford's hydrotime model =======================================
-
-#' Fitting Bradford's hydrotime model.
+#' Fits Bradford's hydrotime model
 #'
-#' \code{bradford} is used by \code{\link{physiotime}} when \code{method =
-#' "bradford"} to fit a hydrotime seed germination model using the method of
-#' Bradford.
+#' \code{bradford} fits a hydrotime seed germination model using the method of
+#' Bradford (Gummerson 1986, Bradford 1990, Bewley et al. 2013). This function
+#' can be used only with one-group dataset, i.e. one seed lot of one species. To
+#' fit models to grouped datasets (multi-seedlots, multi-species) use the
+#' function \code{physiotime} instead.
 #'
-#' @usage bradford(d, t, g, pg, x, reps = NULL, groups = NULL)
-#' @param d a data.table produced by \code{physiotime} containing the
-#'   germination data
-#' @return \code{bradford} returns a list with the results which is passed back
-#'   to \code{\link{physiotime}}. The list includes the following elements:
-#'   \describe{ \item{groups}{a data.table with the grouping variables defined
-#'   by the \code{groups} argument} of \code{physiotime} \item{data}{a
-#'   data.table with the original germination data plus new columns with
-#'   variables calculated for model fitting} \item{models}{the \code{lm} objects
-#'   fitted to calculate the physiological time parameters} \item{parameters}{a
-#'   list with a summary of the experiment and the physiological time
-#'   parameters}}
+#' @usage bradford(d)
+#' @param d a data.table within a "physiodata" object, containing the cumulative
+#'   germination proportion at each scoring time and water potential treatment.
+#' @return \code{bradford} returns a S3 object of class "bradford" with the
+#'   results of fitting the hydrotime model. The generic functions
+#'   \code{summary} and \code{plot} are used to obtain and visualize the model
+#'   results.
+#' @examples
+#' # format dataset with physiodata
+#' anisantha <- physiodata(subset(grasses, species == "Anisantha rubens"), x = "psi")
+#' # bradford() uses the $proportions element within the physiodata object
+#' b <- bradford(anisantha$proportions)
+#' b # prints the main hydrotime variables
+#' summary(b) # returns the main hydrotime variables as a data.table
+#' plot(b) # plots the fitted model
+#' @references Bewley, J. D., Bradford, K. J., Hilhorst, H. W., & Nonogaki, H.
+#'   (2013). Hydrotime Model of Germination. In Seeds: Physiology of
+#'   Development, Germination and Dormancy, 3rd Edition (pp. 303-307). Springer,
+#'   New York, NY.
+#'
+#'   Bradford, K. J. (1990). A water relations analysis of seed germination
+#'   rates. Plant Physiology, 94(2), 840-849.
+#'
+#'   Gummerson, R. J. (1986). The effect of constant temperatures and osmotic
+#'   potentials on the germination of sugar beet. Journal of Experimental
+#'   Botany, 37(6), 729-741.
 #' @export
 bradford <- function(d) tryCatch(
   {
@@ -45,47 +59,47 @@ bradford <- function(d) tryCatch(
   }, error = function(e) e)
 
 # bradford generic functions
-#' @export
 
-print.bradford <- function(y)
+#' @export
+print.bradford <- function(x, ...)
 {
   cat("Bradford's hydrotime model", "\n",
       "Water potential levels in experiment:",
-      round(y$parameters$levels, 1), "\n",
+      round(x$parameters$levels, 1), "\n",
       "Theta - Hydrotime constant:",
-      round(y$parameters$theta, 2), "\n",
+      round(x$parameters$theta, 2), "\n",
       "Psib50 - Base water potential (median):",
-      round((y$parameters$psib50), 2), "\n",
+      round((x$parameters$psib50), 2), "\n",
       "Sigma of the base water potential:",
-      round(y$parameters$sigma, 2), "\n",
-      "R2:", round(y$parameters$R2, 2), "\n", "\n")
+      round(x$parameters$sigma, 2), "\n",
+      "R2:", round(x$parameters$R2, 2), "\n", "\n")
 }
 
 #' @export
-summary.bradford <- function(y)
+summary.bradford <- function(object, ...)
 {
   data.table(
-    method = class(y),
-    n.treatments = length(y$parameters$levels),
-    theta = y$parameters$theta,
-    psib50 = y$parameters$psib50,
-    sigma = y$parameters$sigma,
-    R2 = y$parameters$R2)
+    method = class(object),
+    n.treatments = length(object$parameters$levels),
+    theta = object$parameters$theta,
+    psib50 = object$parameters$psib50,
+    sigma = object$parameters$sigma,
+    R2 = object$parameters$R2)
 }
 
 #' @export
-plot.bradford <- function(d) # Plots Bradford's model
+plot.bradford <- function(x, ...) # Plots Bradford's model
 {
-  colnumber <- length(unique(d$data$treatment))
+  colnumber <- length(unique(x$data$treatment))
   colramp <- colorRampPalette(c("red", "orange", "yellow",
                                 "green", "blue", "violet"))
-  d$data$color <- colramp(colnumber)[as.numeric(cut(d$data$treatment, breaks = colnumber))]
+  x$data$color <- colramp(colnumber)[as.numeric(cut(x$data$treatment, breaks = colnumber))]
 
-  plot(d$data$psibg, d$data$probit, col = d$data$color, pch = 16,
+  plot(x$data$psibg, x$data$probit, col = x$data$color, pch = 16,
        xlab = expression(paste(psi[b], " (g)")), ylab = "Probit germination")
-  abline(lm(d$data$probit ~ d$data$psibg))
+  abline(lm(x$data$probit ~ x$data$psibg))
   legend("topleft", title = expression(paste(psi, " (MPa)")),
-         legend = levels(as.factor(round(d$data$treatment, 1))), pch = 16,
+         legend = levels(as.factor(round(x$data$treatment, 1))), pch = 16,
          col = colramp(colnumber))
 }
 

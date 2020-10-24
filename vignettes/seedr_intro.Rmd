@@ -1,5 +1,5 @@
 ---
-title: "seedr: Hydro and Thermal Time Germination Models"
+title: "seedr: hydro and thermal time seed germination models in R"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{seedr_Hydro_and_Thermal_Time_Germination_Models}
@@ -51,7 +51,7 @@ grass <- physiodata(grasses, x = "psi", groups = "species") # the x argument den
 plot(grass)
 ```
 
-# Bradford's model hydrotime model
+# Bradford's hydrotime model
 
 You can fit Bradford's hydrotime model to your _physiodata_ object using the function _bradford_:
 

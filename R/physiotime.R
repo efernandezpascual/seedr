@@ -1,63 +1,62 @@
-# Main input function =======================================
-
-#' Fitting Physiological Time Seed Germination Models.
+#' Fits physiological time seed germination models
 #'
 #' \code{physiotime} fits physiological time models (thermal time, hydrotime) to
-#' seed germination data.
+#' seed germination data. It is a wrapper function that transforms data to class
+#' "physiodata" and allows to specify the physiological time model to be fitted
+#' (i.e. Bradford's hydrotime model or Garcia-Huidobro's thermal time model).
 #'
-#' This function allows to specify the method to be used (e.g. Bradford's
-#' hydrotime model). \code{physiotime} is a constructor function that will
-#' return a S3 object whose class depends on the method defined to fit the
-#' models.
-#'
-#' @usage physiotime(d, t, g, pg, x, reps = NULL, groups = NULL,
-#'   method)
-#' @param d a data frame containing the results of a germination experiment.
-#'   The data frame should include columns with scoring times, germination
-#'   counts (not cumulative), number of potentially germinable seeds, and the
+#' @usage physiotime(d, t = "times", g = "germinated", pg = "germinable", x =
+#'   "treatment", groups = NULL, method = "bradford", min.ptos = 3, tops =
+#'   c("Max R2","Max value"), fractions = (1:9)/10)
+#' @param d a data.frame containing the results of a germination experiment. The
+#'   data frame should include columns with scoring times, germination counts
+#'   (not cumulative), number of potentially germinable seeds, and the
 #'   environmental variable of interest. (e.g. temperature or water potential)
-#'   (see \code{\link{peg}} example dataset for appropiate structure)
-#' @param t the name of a column (quoted) in \code{d} containing a vector of
-#'   numeric scoring times
-#' @param g the name of a column (quoted) in \code{d} containing a vector of
-#'   integer germination counts (non cumulative)
-#' @param pg the name of a column (quoted) in \code{d} containing a vector of
-#'   integer numbers of potentially germinable seeds
-#' @param x the name of a column (quoted) in \code{d} containing a vector of
-#'   numeric values for the environmental variable of interest (e.g.
-#'   temperature, water potential)
-#' @param reps optional, the name of a column (quoted) in \code{d} containing a
-#'   vector of replicate information (e.g. Petri dish)
-#' @param groups optional, the names of columns (quoted) in \code{d} containing
-#'   grouping variables for the experiment that have to be analysed separately
-#'   (e.g. different species or populations, different tempperatures in a water
-#'   potential experiment, different treatments to break seed dormancy)
-#' @param method the method to be used to fit the models, e.g. Bradford's
-#'   hydrotime model
-#' @return \code{physiotime} returns a S3 object of class equal to the method
-#'   specified by the \code{method} argument. The object is a list. The elements
-#'   in the first level are the experimental groups as specified by the
-#'   \code{groups} argument (if \code{groups = NULL}, there will be a single
-#'   first-level element). The second level of the list contains, for each
-#'   group, the following elements:
-#'   \describe{
-#'   \item{groups}{a data.table with
-#'   the grouping variables defined by the \code{groups} argument}
-#'   \item{data}{a data.table with the original germination data plus new columns with
-#'   variables calculated for model fitting}
-#'   \item{models}{the model objects
-#'   fitted to calculate the physiological time parameters}
-#'   \item{parameters}{a list with a summary of the experiment and the physiological time
-#'   parameters}}
-#' @examples physiotime(d = peg, t = "times", g = "germinated",
-#'                      pg = "germinable", x = "psi", reps = "dish",
-#'                      groups = c("species", "temperature"),
-#'                      method = "bradford")
+#'   (see \code{\link{grasses}} example dataset for appropiate structure).
+#' @param t the name of a column in \code{d} containing a vector of numeric
+#'   scoring times.
+#' @param g the name of a column in \code{d} containing a vector of integer
+#'   germination counts (non cumulative).
+#' @param pg the name of a column in \code{d} containing a vector of integer
+#'   numbers of potentially germinable seeds.
+#' @param x the name of a column in \code{d} containing a vector of numeric
+#'   values for the environmental variable of interest (e.g. temperature, water
+#'   potential).
+#' @param groups optional, the names of columns in \code{d} containing grouping
+#'   variables for the experiment that have to be analysed separately (e.g.
+#'   different species or populations, different temperatures in a water
+#'   potential experiment, different treatments to break seed dormancy).
+#' @param method the method to be used to fit the models, can be "bradford" to
+#'   fit a hydrotime model or "huidobro" to fit a thermal time model.
+#' @param min.ptos minimal number of data points (i.e. different temperature
+#'   treatments) needed to fit the suboptimal and supraoptimal germination
+#'   models if fitting a thermal time model. If the number of points available
+#'   in the dataset is less than \code{min.ptos}, then the suboptimal or the
+#'   supraoptimal models are not fitted.
+#' @param tops method used to divide the dataset in suboptimal and supraoptimal
+#'   sections if fitting a thermal time model. "Max value" splits the data by
+#'   the temperature that produces the highest seed germination rate. "Max R2"
+#'   splits the data by the temperature that maximises the R2 of the suboptimal
+#'   and supraoptimal linear regressions.
+#' @param fractions percentiles into which the seed population is split if
+#'   fitting a thermal time model. The default is the 9 deciles (i.e. t10, t20..
+#'   t90) as used by Garcia-Huidobro.
+#' @return \code{physiotime} returns a S3 object of class "physiotime".
+#'  The object is a list containing, for each group (seedlot, speciec, etc.) the
+#'  results of fitting the physiological time models.  The generic functions
+#'   \code{summary} and \code{plot} are used to obtain and visualize the model
+#'   results.
+#' @examples
+#' m <- physiotime(centaury, x = "temperature",
+#'                 method = "huidobro", groups = c("species", "population"))
+#' m
+#' summary(m)
+#' plot(m)
 #' @export
 physiotime <- function(d, t = "times", g = "germinated", pg = "germinable",
                        x = "treatment", groups = NULL, method = "bradford",
                        min.ptos = 3, tops = c("Max R2","Max value"),
-                       fractions = (1:9)/10, extrapolate.prange = 1)
+                       fractions = (1:9)/10)
 {
   d <- physiodata(d, t, g, pg, x, groups)
   if(is.null(groups)) {
@@ -78,30 +77,30 @@ physiotime <- function(d, t = "times", g = "germinated", pg = "germinable",
 # physiotime generic functions
 
 #' @export
-print.physiotime <- function(d)
+print.physiotime <- function(x, ...)
 {
   cat("A list of physiological time germination models", "\n",
-      "calculated for the following", length(d), "groups:", "\n", "\n")
-  for(y in d) {
+      "calculated for the following", length(x), "groups:", "\n", "\n")
+  for(y in x) {
     cat(y$groups$group, "\n")
     print(y)
   }
 }
 
 #' @export
-summary.physiotime <- function(d)
+summary.physiotime <- function(object, ...)
 {
-  l <- lapply(d, function(y) data.frame(
+  l <- lapply(object, function(y) data.frame(
     y$groups[,-ncol(y$groups), with = FALSE], summary(y)))
   rbindlist(l)
 }
 
 #' @export
-plot.physiotime <- function(d) # Plots Bradford's model
+plot.physiotime <- function(x, ...) # Plots Bradford's model
 {
   ask.status <- par()$ask
   par(ask = TRUE)
-  for(y in d) {
+  for(y in x) {
     plot(y)
     title(main = y$groups$group)
   }

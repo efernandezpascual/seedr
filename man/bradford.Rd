@@ -2,27 +2,46 @@
 % Please edit documentation in R/bradford.R
 \name{bradford}
 \alias{bradford}
-\title{Fitting Bradford's hydrotime model.}
+\title{Fits Bradford's hydrotime model}
 \usage{
-bradford(d, t, g, pg, x, reps = NULL, groups = NULL)
+bradford(d)
 }
 \arguments{
-\item{d}{a data.table produced by \code{physiotime} containing the
-germination data}
+\item{d}{a data.table within a "physiodata" object, containing the cumulative
+germination proportion at each scoring time and water potential treatment.}
 }
 \value{
-\code{bradford} returns a list with the results which is passed back
-  to \code{\link{physiotime}}. The list includes the following elements:
-  \describe{ \item{groups}{a data.table with the grouping variables defined
-  by the \code{groups} argument} of \code{physiotime} \item{data}{a
-  data.table with the original germination data plus new columns with
-  variables calculated for model fitting} \item{models}{the \code{lm} objects
-  fitted to calculate the physiological time parameters} \item{parameters}{a
-  list with a summary of the experiment and the physiological time
-  parameters}}
+\code{bradford} returns a S3 object of class "bradford" with the
+  results of fitting the hydrotime model. The generic functions
+  \code{summary} and \code{plot} are used to obtain and visualize the model
+  results.
 }
 \description{
-\code{bradford} is used by \code{\link{physiotime}} when \code{method =
-"bradford"} to fit a hydrotime seed germination model using the method of
-Bradford.
+\code{bradford} fits a hydrotime seed germination model using the method of
+Bradford (Gummerson 1986, Bradford 1990, Bewley et al. 2013). This function
+can be used only with one-group dataset, i.e. one seed lot of one species. To
+fit models to grouped datasets (multi-seedlots, multi-species) use the
+function \code{physiotime} instead.
+}
+\examples{
+# format dataset with physiodata
+anisantha <- physiodata(subset(grasses, species == "Anisantha rubens"), x = "psi")
+# bradford() uses the $proportions element within the physiodata object
+b <- bradford(anisantha$proportions)
+b # prints the main hydrotime variables
+summary(b) # returns the main hydrotime variables as a data.table
+plot(b) # plots the fitted model
+}
+\references{
+Bewley, J. D., Bradford, K. J., Hilhorst, H. W., & Nonogaki, H.
+  (2013). Hydrotime Model of Germination. In Seeds: Physiology of
+  Development, Germination and Dormancy, 3rd Edition (pp. 303-307). Springer,
+  New York, NY.
+
+  Bradford, K. J. (1990). A water relations analysis of seed germination
+  rates. Plant Physiology, 94(2), 840-849.
+
+  Gummerson, R. J. (1986). The effect of constant temperatures and osmotic
+  potentials on the germination of sugar beet. Journal of Experimental
+  Botany, 37(6), 729-741.
 }

@@ -1,0 +1,22 @@
+# Prevents "no visible binding for global variable" during R CMD check
+
+utils::globalVariables(c("treatment",
+                         "germination.mean",
+                         "probit",
+                         "time",
+                         "psibg",
+                         "Levels",
+                         "rate",
+                         "Tb",
+                         "Tmin",
+                         "Tc",
+                         "Tmax",
+                         "To",
+                         "probit",
+                         "thetag",
+                         "germinable",
+                         "cumulative",
+                         "..groups",
+                         "group",
+                         "r50",
+                         "."))

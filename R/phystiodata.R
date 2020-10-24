@@ -1,5 +1,46 @@
+#' Transforms dataset to physiodata format
+#'
+#' \code{physiodata} takes the user's dataset and transforms it to an object of
+#' class "physiodata". This object will be used by the model-fitting functions,
+#' and it can also be used to explore the data.
+#'
+#' @usage physiodata(d, t = "times", g = "germinated", pg = "germinable", x =
+#'   "treatment", groups = NULL)
+#' @param d a data.frame containing the results of a germination experiment. The
+#'   data frame should include columns with scoring times, germination counts
+#'   (not cumulative), number of potentially germinable seeds, and the
+#'   environmental variable of interest. (e.g. temperature or water potential)
+#'   (see \code{\link{grasses}} example dataset for appropiate structure).
+#' @param t the name of a column in \code{d} containing a vector of numeric
+#'   scoring times.
+#' @param g the name of a column in \code{d} containing a vector of integer
+#'   germination counts (non cumulative).
+#' @param pg the name of a column in \code{d} containing a vector of integer
+#'   numbers of potentially germinable seeds.
+#' @param x the name of a column in \code{d} containing a vector of numeric
+#'   values for the environmental variable of interest (e.g. temperature, water
+#'   potential).
+#' @param groups optional, the names of columns in \code{d} containing grouping
+#'   variables for the experiment that have to be analysed separately (e.g.
+#'   different species or populations, different temperatures in a water
+#'   potential experiment, different treatments to break seed dormancy).
+#' @return \code{physiodata} returns a S3 object of class "physiodata". The
+#'   object is a list containing, for each group, treatment and scoring time:
+#'   the cumulative germination count; the cumulative germination proportion;
+#'   and the lower and upper bounds of the 95 % binomial confidence interval,
+#'   calculated with the Wilson method as implemented in the package
+#'   \code{binom}. The object can be used to explore the data using the generic
+#'   functions \code{summary}, \code{barplot} and \code{plot}.
+#' @examples
+#' cent <- physiodata(centaury, x = "temperature")
+#' cent
+#' summary(cent) # average final germination proportions and germination rates per treatment
+#' barplot(cent) # bar plots for the final germination proportions and germination rates
+#' plot(cent) # cumulative germination curves
+#' physiodata(grasses, x = "psi", groups = "species") # grouping dataset by species
 #' @export
-physiodata <- function(d, t = "times", g = "germinated", pg = "germinable", x = "treatment", groups = NULL)
+physiodata <- function(d, t = "times", g = "germinated", pg = "germinable",
+                       x = "treatment", groups = NULL)
 {
   dd <- data.table(d)
   setnames(dd, c(t, x), c("time", "treatment"))
@@ -18,27 +59,27 @@ physiodata <- function(d, t = "times", g = "germinated", pg = "germinable", x = 
 # physiodata generic functions
 
 #' @export
-print.physiodata <- function(d)
+print.physiodata <- function(x, ...)
 {
-  print(d$proportions)
+  print(x$proportions)
 }
 
 #' @export
-summary.physiodata <- function(d)
+summary.physiodata <- function(object, ...)
 {
-  dd <- d$proportions[d$proportions[, .I[(time == max(time))], by = c(d$groups, "treatment")]$V1]
+  dd <- object$proportions[object$proportions[, .I[(time == max(time))], by = c(object$groups, "treatment")]$V1]
   dd[, c("germinated", "germinable", "cumulative") := NULL][]
-  setorderv(dd, c(d$groups, "treatment"))
-  dr <- d$proportions[, .(r50 = rates(d = .SD, fractions = 0.5, extrapolate.prange = 1)), by = c(d$groups, "treatment")]
+  setorderv(dd, c(object$groups, "treatment"))
+  dr <- object$proportions[, .(r50 = rates(d = .SD, fractions = 0.5, extrapolate.prange = 1)), by = c(object$groups, "treatment")]
   cbind(dd, dr[, list(r50)])
 }
 
 #' @export
-barplot.physiodata <- function(d, x.lab = "Treatment")
+barplot.physiodata <- function(height, ..., x.lab = "Treatment")
 {
-  dd <- summary(d)
-  if(! is.null(d$groups)){
-  listd <- split(dd, by = d$groups, drop = TRUE)
+  dd <- summary(height)
+  if(! is.null(height$groups)){
+  listd <- split(dd, by = height$groups, drop = TRUE)
   ask.status <- par()$ask
   par(ask = TRUE)
   for(i in seq_along(listd)) {
@@ -81,25 +122,25 @@ barplot.physiodata <- function(d, x.lab = "Treatment")
 }
 
 #' @export
-plot.physiodata <- function(d)
+plot.physiodata <- function(x, ...)
 {
-  if(! is.null(d$groups)){
-    listd <- split(d$proportions, by = d$groups, drop = TRUE)
+  if(! is.null(x$groups)){
+    listd <- split(x$proportions, by = x$groups, drop = TRUE)
     ask.status <- par()$ask
     par(ask = TRUE)
     for(i in seq_along(listd)) {
       colnumber <- listd[[i]][, .(n = length(unique(treatment)))][[1]]
       colramp <- colorRampPalette(c("violet", "blue", "green",
                                     "yellow", "orange", "red"))
-      x <- split(listd[[i]]$time, listd[[i]][, treatment])
+      X <- split(listd[[i]]$time, listd[[i]][, treatment])
       y <- split(listd[[i]]$germination.mean, listd[[i]][, treatment])
       xpd.status <- par()$xpd
       mar.status <- par()$mar
       par(xpd = TRUE)
       par(mar = mar.status + c(0, 0, 0, 4))
-      plot(1 : max(unlist(x)), ylim = (c(0, 1)), type = "n",
+      plot(1 : max(unlist(X)), ylim = (c(0, 1)), type = "n",
            xlab = "Time", ylab = "Germination proportion")
-      mapply(lines, x, y, col = colramp(colnumber), pch = 16, type = "o")
+      mapply(lines, X, y, col = colramp(colnumber), pch = 16, type = "o")
       legend(max(listd[[i]][, time]) + max(listd[[i]][, time])*.05, 1.1,
              title = "Treatment",
              legend = levels(as.factor(round(listd[[i]][, treatment], 1))), pch = 16,
@@ -108,27 +149,28 @@ plot.physiodata <- function(d)
       par(mar = mar.status)
       title(names(listd)[i])}
     par(ask = ask.status)} else{
-      colnumber <- d$proportions[, .(n = length(unique(treatment)))][[1]]
+      colnumber <- x$proportions[, .(n = length(unique(treatment)))][[1]]
       colramp <- colorRampPalette(c("violet", "blue", "green",
                                     "yellow", "orange", "red"))
-      x <- split(d$proportions$time, d$proportions[, treatment])
-      y <- split(d$proportions$germination.mean, d$proportions[, treatment])
+      X <- split(x$proportions$time, x$proportions[, treatment])
+      y <- split(x$proportions$germination.mean, x$proportions[, treatment])
       xpd.status <- par()$xpd
       mar.status <- par()$mar
       par(xpd = TRUE)
       par(mar = mar.status + c(0, 0, 0, 4))
-      plot(1 : max(unlist(x)), ylim = (c(0, 1)), type = "n",
+      plot(1 : max(unlist(X)), ylim = (c(0, 1)), type = "n",
            xlab = "Time", ylab = "Germination proportion")
-      mapply(lines, x, y, col = colramp(colnumber), pch = 16, type = "o")
-      legend(max(d$proportions[, time]) + max(d$proportions[, time])*.05, 1.1,
+      mapply(lines, X, y, col = colramp(colnumber), pch = 16, type = "o")
+      legend(max(x$proportions[, time]) + max(x$proportions[, time])*.05, 1.1,
              title = "Treatment",
-             legend = levels(as.factor(round(d$proportions[, treatment], 1))), pch = 16,
+             legend = levels(as.factor(round(x$proportions[, treatment], 1))), pch = 16,
              col = colramp(colnumber), lwd = 1, lty = 1)
       par(xpd = xpd.status)
       par(mar = mar.status)}
 }
 
-# physiodata generic functions
+
+# physiodata internal functions
 
 rates <- function(d, fractions = (1:9)/10, extrapolate.prange = 1)
 {
