@@ -1,5 +1,5 @@
 ---
-title: "seedr: hydro and thermal time seed germination models in R"
+title: "seedr: Hydro and Thermal Time Seed Germination Models in R"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{seedr_Hydro_and_Thermal_Time_Germination_Models}

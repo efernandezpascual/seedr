@@ -1,4 +1,4 @@
-#' seedr: hydro and thermal time seed germination models in R
+#' seedr: Hydro and Thermal Time Seed Germination Models in R
 #'
 #' The \code{seedr} package provides functions to fit hydro and thermal time
 #' germination models. These models characterize seed lots by two sets of
