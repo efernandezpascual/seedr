@@ -51,52 +51,52 @@
 #' @export
 huidobro <- function(d, min.ptos = 3, tops = c("Max R2","Max value"),
                      fractions = (1:9)/10) tryCatch(
-{
-  rates <- d[, .(fraction = fractions, rate = rates(d = .SD, fractions = fractions)), by = c("treatment")]
-  rates <- rates[! is.na(rates$rate)]
+                       {
+                         rates <- d[, .(fraction = fractions, rate = rates(d = .SD, fractions = fractions)), by = c("treatment")]
+                         rates <- rates[! is.na(rates$rate)]
 
-  if ("Max value" %in% tops)  # Tb<=Tmin, Tc>=Tmax for all quantiles
-  {
-    Ts <- rates[, cardinals(.SD[["treatment"]], rate, which.max(rate),
-                          min.ptos = min.ptos), by = c("fraction")]
-    Topt <- Ts[, .(Tb = min(c(mean(Tb, na.rm = TRUE), min(Tmin, na.rm = TRUE))),
-                   Tc = max(c(mean(Tc, na.rm = TRUE), max(Tmax), na.rm = TRUE)),
-                   To = mean(To, na.rm = TRUE))]
-  }
+                         if ("Max value" %in% tops)  # Tb<=Tmin, Tc>=Tmax for all quantiles
+                         {
+                           Ts <- rates[, cardinals(.SD[["treatment"]], rate, which.max(rate),
+                                                   min.ptos = min.ptos), by = c("fraction")]
+                           Topt <- Ts[, .(Tb = min(c(mean(Tb, na.rm = TRUE), min(Tmin, na.rm = TRUE))),
+                                          Tc = max(c(mean(Tc, na.rm = TRUE), max(Tmax), na.rm = TRUE)),
+                                          To = mean(To, na.rm = TRUE))]
+                         }
 
-  if ("Max R2" %in% tops)  # Tb<=Tmin, Tc>=Tmax for all quantiles
-  {
-    Ts <- rates[, cardinals(.SD[["treatment"]], rate,
-                          maximizeR2(.SD[["treatment"]], rate, min.ptos = min.ptos),
-                          min.ptos = min.ptos), by = c("fraction")]
-    Topt <- Ts[, .(Tb = min(c(mean(Tb, na.rm = TRUE), min(Tmin, na.rm = TRUE))),
-                   Tc =max(c(mean(Tc, na.rm = TRUE), max(Tmax), na.rm = TRUE)),
-                   To = mean(To, na.rm = TRUE))]
-  }
+                         if ("Max R2" %in% tops)  # Tb<=Tmin, Tc>=Tmax for all quantiles
+                         {
+                           Ts <- rates[, cardinals(.SD[["treatment"]], rate,
+                                                   maximizeR2(.SD[["treatment"]], rate, min.ptos = min.ptos),
+                                                   min.ptos = min.ptos), by = c("fraction")]
+                           Topt <- Ts[, .(Tb = min(c(mean(Tb, na.rm = TRUE), min(Tmin, na.rm = TRUE))),
+                                          Tc =max(c(mean(Tc, na.rm = TRUE), max(Tmax), na.rm = TRUE)),
+                                          To = mean(To, na.rm = TRUE))]
+                         }
 
-  d[, probit := qnorm(germination.mean, 0, 1)]
+                         d[, probit := qnorm(germination.mean, 0, 1)]
 
-  subs <- d[treatment <= Topt$To & is.finite(probit)]
-  subs[, thetag := time * (treatment - Topt$Tb)]
-  subfit <- gaussfit(subs)
-  sups <- d[treatment >= Topt$To & is.finite(probit)]
-  sups[, thetag := time * (Topt$Tc - treatment)]
-  supfit <- gaussfit(sups)
+                         subs <- d[treatment <= Topt$To & is.finite(probit)]
+                         subs[, thetag := time * (treatment - Topt$Tb)]
+                         subfit <- gaussfit(subs)
+                         sups <- d[treatment >= Topt$To & is.finite(probit)]
+                         sups[, thetag := time * (Topt$Tc - treatment)]
+                         supfit <- gaussfit(sups)
 
-  l <- list()
+                         l <- list()
 
-  l$data$suboptimal <- subs
-  l$data$supraoptimal <- sups
+                         l$data$suboptimal <- subs
+                         l$data$supraoptimal <- sups
 
-  l$parameters$levels$suboptimal <- unique(subs$treatment)
-  l$parameters$levels$supraoptimal <- unique(sups$treatment)
-  l$parameters$cardinals <- Topt
-  l$parameters$suboptimal <- subfit
-  l$parameters$supraoptimal <- supfit
+                         l$parameters$levels$suboptimal <- unique(subs$treatment)
+                         l$parameters$levels$supraoptimal <- unique(sups$treatment)
+                         l$parameters$cardinals <- Topt
+                         l$parameters$suboptimal <- subfit
+                         l$parameters$supraoptimal <- supfit
 
-  class(l) <- "huidobro"
-  l
-}, error = function(e) e)
+                         class(l) <- "huidobro"
+                         l
+                       }, error = function(e) e)
 
 # huidobro generic functions
 
@@ -174,66 +174,30 @@ summary.huidobro <- function(object, ...)
 plot.huidobro <- function(x, ...) # Plots García-Huidobro's model
 {
   if(is.nan(x$parameters$cardinals$Tc)) {
-  xpd.status <- par()$xpd
-  mar.status <- par()$mar
-
-  par(mar = mar.status + c(0, 0, 0, 4))
-  colnumber <- length(unique(x$data$suboptimal$treatment))
-  colramp <- colorRampPalette(c("red", "orange", "yellow",
-                                "green", "blue", "violet"))
-  x$data$suboptimal$color <- colramp(colnumber)[as.numeric(cut(x$data$suboptimal$treatment, breaks = colnumber))]
-
-  plot(x$data$suboptimal$thetag, x$data$suboptimal$probit, col = x$data$suboptimal$color, pch = 16,
-       xlab = expression(paste("Suboptimal ", theta, " (g)")), ylab = "Probit germination")
-  abline(lm(x$data$suboptimal$probit ~ x$data$suboptimal$thetag))
-  par(xpd = TRUE)
-  legend(max(x$data$suboptimal[, thetag]) + max(x$data$suboptimal[, thetag])*.05, 2,
-         title = "U+00B0C",
-         legend = levels(as.factor(round(x$data$suboptimal$treatment, 1))), pch = 16,
-         col = colramp(colnumber))
-  par(xpd = xpd.status)
-  par(mar = mar.status)} else
-  {if(is.nan(x$parameters$cardinals$To)) {
     xpd.status <- par()$xpd
     mar.status <- par()$mar
 
     par(mar = mar.status + c(0, 0, 0, 4))
-    colnumber <- length(unique(x$data$supraoptimal$treatment))
+    colnumber <- length(unique(x$data$suboptimal$treatment))
     colramp <- colorRampPalette(c("red", "orange", "yellow",
                                   "green", "blue", "violet"))
-    x$data$supraoptimal$color <- colramp(colnumber)[as.numeric(cut(x$data$supraoptimal$treatment, breaks = colnumber))]
+    x$data$suboptimal$color <- colramp(colnumber)[as.numeric(cut(x$data$suboptimal$treatment, breaks = colnumber))]
 
-    plot(x$data$supraoptimal$thetag, x$data$supraoptimal$probit, col = x$data$supraoptimal$color, pch = 16,
-         xlab = expression(paste("Supraoptimal ", theta, " (g)")), ylab = "Probit germination")
-    abline(lm(x$data$supraoptimal$probit ~ x$data$supraoptimal$thetag))
+    plot(x$data$suboptimal$thetag, x$data$suboptimal$probit, col = x$data$suboptimal$color, pch = 16,
+         xlab = expression(paste("Suboptimal ", theta, " (g)")), ylab = "Probit germination")
+    abline(lm(x$data$suboptimal$probit ~ x$data$suboptimal$thetag))
     par(xpd = TRUE)
-    legend(max(x$data$supraoptimal[, thetag]) + max(x$data$supraoptimal[, thetag])*.05, 2,
+    legend(max(x$data$suboptimal[, thetag]) + max(x$data$suboptimal[, thetag])*.05, 2,
            title = "U+00B0C",
-           legend = levels(as.factor(round(x$data$supraoptimal$treatment, 1))), pch = 16,
+           legend = levels(as.factor(round(x$data$suboptimal$treatment, 1))), pch = 16,
            col = colramp(colnumber))
     par(xpd = xpd.status)
-    par(mar = mar.status)} else {
+    par(mar = mar.status)} else
+    {if(is.nan(x$parameters$cardinals$To)) {
       xpd.status <- par()$xpd
       mar.status <- par()$mar
-      ask.status <- par()$ask
-      par(ask = TRUE)
+
       par(mar = mar.status + c(0, 0, 0, 4))
-
-      colnumber <- length(unique(x$data$suboptimal$treatment))
-      colramp <- colorRampPalette(c("red", "orange", "yellow",
-                                    "green", "blue", "violet"))
-      x$data$suboptimal$color <- colramp(colnumber)[as.numeric(cut(x$data$suboptimal$treatment, breaks = colnumber))]
-
-      plot(x$data$suboptimal$thetag, x$data$suboptimal$probit, col = x$data$suboptimal$color, pch = 16,
-           xlab = expression(paste("Suboptimal ", theta, " (g)")), ylab = "Probit germination")
-      abline(lm(x$data$suboptimal$probit ~ x$data$suboptimal$thetag))
-      par(xpd = TRUE)
-      legend(max(x$data$suboptimal[, thetag]) + max(x$data$suboptimal[, thetag])*.05, 2,
-             title = "U+00B0C",
-             legend = levels(as.factor(round(x$data$suboptimal$treatment, 1))), pch = 16,
-             col = colramp(colnumber))
-      par(xpd = xpd.status)
-
       colnumber <- length(unique(x$data$supraoptimal$treatment))
       colramp <- colorRampPalette(c("red", "orange", "yellow",
                                     "green", "blue", "violet"))
@@ -247,11 +211,47 @@ plot.huidobro <- function(x, ...) # Plots García-Huidobro's model
              title = "U+00B0C",
              legend = levels(as.factor(round(x$data$supraoptimal$treatment, 1))), pch = 16,
              col = colramp(colnumber))
-
       par(xpd = xpd.status)
-      par(mar = mar.status)
-      par(ask = ask.status)
-    }}
+      par(mar = mar.status)} else {
+        xpd.status <- par()$xpd
+        mar.status <- par()$mar
+        ask.status <- par()$ask
+        par(ask = TRUE)
+        par(mar = mar.status + c(0, 0, 0, 4))
+
+        colnumber <- length(unique(x$data$suboptimal$treatment))
+        colramp <- colorRampPalette(c("red", "orange", "yellow",
+                                      "green", "blue", "violet"))
+        x$data$suboptimal$color <- colramp(colnumber)[as.numeric(cut(x$data$suboptimal$treatment, breaks = colnumber))]
+
+        plot(x$data$suboptimal$thetag, x$data$suboptimal$probit, col = x$data$suboptimal$color, pch = 16,
+             xlab = expression(paste("Suboptimal ", theta, " (g)")), ylab = "Probit germination")
+        abline(lm(x$data$suboptimal$probit ~ x$data$suboptimal$thetag))
+        par(xpd = TRUE)
+        legend(max(x$data$suboptimal[, thetag]) + max(x$data$suboptimal[, thetag])*.05, 2,
+               title = "U+00B0C",
+               legend = levels(as.factor(round(x$data$suboptimal$treatment, 1))), pch = 16,
+               col = colramp(colnumber))
+        par(xpd = xpd.status)
+
+        colnumber <- length(unique(x$data$supraoptimal$treatment))
+        colramp <- colorRampPalette(c("red", "orange", "yellow",
+                                      "green", "blue", "violet"))
+        x$data$supraoptimal$color <- colramp(colnumber)[as.numeric(cut(x$data$supraoptimal$treatment, breaks = colnumber))]
+
+        plot(x$data$supraoptimal$thetag, x$data$supraoptimal$probit, col = x$data$supraoptimal$color, pch = 16,
+             xlab = expression(paste("Supraoptimal ", theta, " (g)")), ylab = "Probit germination")
+        abline(lm(x$data$supraoptimal$probit ~ x$data$supraoptimal$thetag))
+        par(xpd = TRUE)
+        legend(max(x$data$supraoptimal[, thetag]) + max(x$data$supraoptimal[, thetag])*.05, 2,
+               title = "U+00B0C",
+               legend = levels(as.factor(round(x$data$supraoptimal$treatment, 1))), pch = 16,
+               col = colramp(colnumber))
+
+        par(xpd = xpd.status)
+        par(mar = mar.status)
+        par(ask = ask.status)
+      }}
 }
 
 # huidobro internal functions

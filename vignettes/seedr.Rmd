@@ -1,5 +1,7 @@
 ---
 title: "seedr: Hydro and Thermal Time Seed Germination Models in R"
+author: "Eduardo Fernández-Pascual"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{seedr: Hydro and Thermal Time Seed Germination Models in R}

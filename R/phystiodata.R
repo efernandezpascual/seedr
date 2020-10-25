@@ -79,46 +79,46 @@ barplot.physiodata <- function(height, ..., x.lab = "Treatment")
 {
   dd <- summary(height)
   if(! is.null(height$groups)){
-  listd <- split(dd, by = height$groups, drop = TRUE)
-  ask.status <- par()$ask
-  par(ask = TRUE)
-  for(i in seq_along(listd)) {
-    mfrow.status <- par()$mfrow
-    oma.status <- par()$oma
-    par(mfrow = c(1, 2), oma = c(0, 0, 2, 0))
-    p <- barplot(listd[[i]]$germination.mean,
-                 names.arg = as.numeric(listd[[i]][, treatment]),
-                 ylim = c(0, 1),
-                 xlab = x.lab,
-                 ylab = "Final germination proportion")
-    segments(p, listd[[i]]$germination.lower, p, listd[[i]]$germination.upper)
-    arrows(p, listd[[i]]$germination.lower, p, listd[[i]]$germination.upper,
-           lwd = 1.5, angle = 90, code = 3, length = 0.05)
-    barplot(listd[[i]]$r50,
-            names.arg = as.numeric(listd[[i]][, treatment]),
-            xlab = x.lab,
-            ylab = paste("Median germination rate"))
-    mtext(names(listd)[i], line = 0, side = 3, outer = TRUE)
-    par(mfrow = mfrow.status)
-    par(oma = oma.status)
+    listd <- split(dd, by = height$groups, drop = TRUE)
+    ask.status <- par()$ask
+    par(ask = TRUE)
+    for(i in seq_along(listd)) {
+      mfrow.status <- par()$mfrow
+      oma.status <- par()$oma
+      par(mfrow = c(1, 2), oma = c(0, 0, 2, 0))
+      p <- barplot(listd[[i]]$germination.mean,
+                   names.arg = as.numeric(listd[[i]][, treatment]),
+                   ylim = c(0, 1),
+                   xlab = x.lab,
+                   ylab = "Final germination proportion")
+      segments(p, listd[[i]]$germination.lower, p, listd[[i]]$germination.upper)
+      arrows(p, listd[[i]]$germination.lower, p, listd[[i]]$germination.upper,
+             lwd = 1.5, angle = 90, code = 3, length = 0.05)
+      barplot(listd[[i]]$r50,
+              names.arg = as.numeric(listd[[i]][, treatment]),
+              xlab = x.lab,
+              ylab = paste("Median germination rate"))
+      mtext(names(listd)[i], line = 0, side = 3, outer = TRUE)
+      par(mfrow = mfrow.status)
+      par(oma = oma.status)
     }
-  par(ask = ask.status)} else{
-    mfrow.status <- par()$mfrow
-    par(mfrow = c(1, 2))
-    p <- barplot(dd$germination.mean,
-                 names.arg = as.numeric(dd[, treatment]),
-                 ylim = c(0, 1),
-                 xlab = x.lab,
-                 ylab = "Final germination proportion")
-    segments(p, dd$germination.lower, p, dd$germination.upper)
-    arrows(p, dd$germination.lower, p, dd$germination.upper,
-           lwd = 1.5, angle = 90, code = 3, length = 0.05)
-    barplot(dd$r50,
-            names.arg = as.numeric(dd[, treatment]),
-            xlab = x.lab,
-            ylab = paste("Median germination rate"))
-    par(mfrow = mfrow.status)
-  }
+    par(ask = ask.status)} else{
+      mfrow.status <- par()$mfrow
+      par(mfrow = c(1, 2))
+      p <- barplot(dd$germination.mean,
+                   names.arg = as.numeric(dd[, treatment]),
+                   ylim = c(0, 1),
+                   xlab = x.lab,
+                   ylab = "Final germination proportion")
+      segments(p, dd$germination.lower, p, dd$germination.upper)
+      arrows(p, dd$germination.lower, p, dd$germination.upper,
+             lwd = 1.5, angle = 90, code = 3, length = 0.05)
+      barplot(dd$r50,
+              names.arg = as.numeric(dd[, treatment]),
+              xlab = x.lab,
+              ylab = paste("Median germination rate"))
+      par(mfrow = mfrow.status)
+    }
 }
 
 #' @export

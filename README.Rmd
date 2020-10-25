@@ -11,6 +11,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ![](seeds.png)
 
+<!-- badges: start -->
+[![Travis build status](https://travis-ci.com/efernandezpascual/seedr.svg?branch=master)](https://travis-ci.com/efernandezpascual/seedr)
+<!-- badges: end -->
+
+
 ## Overview
 
 `seedr` is an R package that provides functions to fit hydro and thermal time germination models. These models characterize seed lots by two sets of parameters: (i) the physiological thresholds (water, temperature) between which the seed lot can germinate, and (ii) the physiological-time units that the seed lot needs to accumulate before it can germinate. `seedr` fits the hydro time model of Bradford (Gummerson 1986, Bradford 1990, Bewley et al. 2013) and the thermal time model of Garcia-Huidobro (Garcia-Huidobro et al. 1982, Gummerson 1986, Bewley et al. 2013). It allows to fit models to grouped datasets, i.e. datasets containing multiple species, seedlots or experiments.
