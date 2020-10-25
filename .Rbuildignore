@@ -4,3 +4,5 @@
 ^Rprof\.out$
 ^seeds\.png$
 ^LICENSE$
+^doc$
+^Meta$

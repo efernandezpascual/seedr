@@ -1,0 +1,160 @@
+---
+title: "seedr: Hydro and Thermal Time Seed Germination Models in R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{seedr: Hydro and Thermal Time Seed Germination Models in R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Overview
+
+`seedr` is an R package that provides functions to fit hydro and thermal time germination models. These models characterize seed lots by two sets of parameters: (i) the physiological thresholds (water, temperature) between which the seed lot can germinate, and (ii) the physiological-time units that the seed lot needs to accumulate before it can germinate. `seedr` fits the hydro time model of Bradford (Gummerson 1986, Bradford 1990, Bewley et al. 2013) and the thermal time model of Garcia-Huidobro (Garcia-Huidobro et al. 1982, Gummerson 1986, Bewley et al. 2013). It allows to fit models to grouped datasets, i.e. datasets containing multiple species, seedlots or experiments.
+
+## Installation
+
+Install the last version of `seedr` from GitHub by running the following code in your R session. Note that you will need to install the package `devtools` if you don't have it already:
+
+```{r eval=FALSE}
+install.packages("devtools")
+devtools::install_github("efernandezpascual/seedr")
+```
+
+## Using `seedr`
+
+```{r setup}
+# once installed, load seedr
+library(seedr)
+```
+
+To operate `seedr` you need just one function: `physiotime()`, a wrapper function that formats your data and fits a hydro/thermal time model. In this vignette, first we will see the basic operations behind `physiotime()`, and then we will see how to use `physiotime()`.
+
+## *physiodata*, a way of storing germination data
+
+The first step of a `seedr` analysis is processed by the `physiodata()` function, which will create a *physiodata* object storing the germination data in a format adequate for subsequent steps. Importantly, the *physiodata* can be used for basic visualization of your germination data.
+
+Let's say you have imported your data into R and saved it into a data.frame object called `centaury`, which looks like this:
+
+```{r}
+head(centaury, 3)
+```
+
+In your data, each column must be a variable and each row a record. Important: for each germination scoring time, you need to record the number of seeds that germinated at that time, not the cumulative germination count since the start of the experiment.
+
+Now, you can transform your data.frame to a *physiodata* object like this:
+
+```{r}
+cent <- physiodata(d = centaury, # the name of your data object
+                   t = "times", # the column with the scoring times
+                   x = "temperature", # the column with the experimental treatment,
+                   g = "germinated", # the column with the number of germinated seeds,
+                   pg = "germinable") # the column with the total number of viable seeds
+```
+
+You can use `summary()` on your *physiodata* object to get a table in which you will see, for each treatment, the final germination proportions (with 95% binomial confidence interval) and the median germination rate (i.e., the inverse of the time taken for 50% germination, 1/t50):
+
+```{r}
+summary(cent)
+```
+
+Using `plot()` on your *physiodata* object will produce a plot of the cumulative germination curves:
+
+```{r fig.width = 7, fig.height = 5}
+plot(cent)
+```
+
+And using `barplot()` on your *physiodata* object will produce a plot of the final germination proportions and the median germination rate:
+
+```{r fig.width = 7, fig.height = 5}
+barplot(cent)
+```
+
+The example we have seen so far was about a single-group dataset, this is, a dataset about one experiment with one seedlot of one species. If your data has several groups (for example, several species, populations, or treatments of stratification), you must group your data with the `groups` argument of `physiodata()`. Also, if the column names in your dataset are the same as the default ones we defined, you don't need to indicate them in the call to `physiodata()`:
+
+```{r fig.width = 7, fig.height = 5}
+grass <- physiodata(grasses, 
+                    x = "psi", # in this dataset the treatment is water potential
+                    groups = "species") # this dataset has two different species
+plot(grass)
+```
+
+## Bradford's hydrotime model
+
+As long as you are working with a single-group dataset, you can fit Bradford's hydrotime model (Gummerson 1986, Bradford 1990, Bewley et al. 2013) to your *physiodata* object using the function `bradford()`:
+
+```{r}
+anisantha <- physiodata(subset(grasses, species == "Anisantha rubens"), # select only one species
+                        x = "psi") 
+b <- bradford(anisantha$proportions) # bradford() uses the $proportions element within the physiodata object
+b
+```
+
+The result is a *bradford* object, which can be plotted using `plot()`:
+
+```{r fig.width = 7, fig.height = 5}
+plot(b)
+```
+
+## Garcia-Huidobro's thermal time model
+
+Likewise, you can fit Garcia-Huidobro's thermal time model (Garcia-Huidobro et al. 1982, Gummerson 1986, Bewley et al. 2013) to your single-group *physiodata* object using the function `huidobro()`:
+
+```{r}
+malva <- physiodata(subset(centaury, population == "La Malva"), # select only one population
+                    x = "temperature") 
+h <- huidobro(malva$proportions) # huidobro() uses the $proportions element within the physiodata object
+h
+```
+
+The result is a *huidobro* object, which can be plotted using `plot()`:
+
+```{r fig.width = 7, fig.height = 5}
+plot(h)
+```
+
+## The `physiotime()` function
+
+As we said at the beginning, `physiotime()` is the basic function of `seedr`, and the only one you need to know for common usage of the package. `physiotime()` allows to centralize the operations described in the previous sections. It creates your *physiodata* object, divides it in the `groups` you indicate, and fits the model named in its `method` argument:
+
+```{r}
+m <- physiotime(d = centaury, # the name of your data object
+                t = "times", # the column with the scoring times
+                x = "temperature", # the column with the experimental treatment,
+                g = "germinated", # the column with the number of germinated seeds,
+                pg = "germinable", # the column with the total number of viable seeds 
+                groups = c("species", "population"), # the columns with grouping variables 
+                method = "huidobro") # the model to fit, in this case a thermal time model
+m
+```
+
+`physiotime()` can accept further arguments to tune the fitting of the thermal time model, but generally you don't need to touch these. You can read more about these extra arguments by running `?physiotime` in R.
+
+The result of `physiotime()` is a *physiotime* object. Using `summary()` on this object, you obtain a table of the fitted model parameters, which is easy to export for further uses:
+
+```{r}
+summary(m)
+```
+
+Likewise, `plot()` will plot the fitted models:
+
+```{r fig.width = 7, fig.height = 5}
+plot(m)
+```
+
+## Getting help
+
+If you encounter a clear bug, please file an issue with a minimal reproducible example on [GitHub](https://github.com/efernandezpascual/seedr).
+
+## References
+
+* Bewley, J. D., Bradford, K. J., Hilhorst, H. W., & Nonogaki, H. (2013). Environmental Control of Germination. In *Seeds: Physiology of Development, Germination and Dormancy, 3rd Edition* (pp. 302-317). Springer, New York, NY.
+* Bradford, K. J. (1990). A water relations analysis of seed germination rates. *Plant Physiology*, 94(2), 840-849.
+* Garcia-Huidobro, J., Monteith, J. L., & Squire, G. R. (1982). Time, temperature and germination of pearl millet (*Pennisetum typhoides* S. & H.) I. Constant temperature. *Journal of Experimental Botany*, 33(2), 288-296.
+* Gummerson, R. J. (1986). The effect of constant temperatures and osmotic potentials on the germination of sugar beet. *Journal of Experimental Botany*, 37(6), 729-741.

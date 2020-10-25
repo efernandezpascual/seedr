@@ -20,10 +20,17 @@ containing multiple species, seedlots or experiments.
 
 ## Installation
 
+``` r
+# Install last version from GitHub
+install.packages("devtools") # Install devtools if you don't have it
+devtools::install_github("efernandezpascual/seedr") # Get seedr from GitHub
+```
+
 ## Usage
 
 ``` r
 library(seedr)
+# seedr relies on physiotime(), a wrapper function that formats your data and fits a hydro/thermal time model
 physiotime(grasses, # germination dataset
            x = "psi", # experimental treatment
            method = "bradford", # hydrotime model
@@ -49,6 +56,11 @@ physiotime(grasses, # germination dataset
     ##  Sigma of the base water potential: 0.38 
     ##  R2: 0.86 
     ## 
+
+``` r
+# for more information read the seedr vignette
+vignette("seedr")
+```
 
 ## References
 

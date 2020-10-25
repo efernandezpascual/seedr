@@ -310,27 +310,28 @@ maximizeR2 <- function(x, r, min.ptos = 3)
   opt <- as.integer(0)
   opt.val <- 0
   for (pos in min.ptos:(n - min.ptos + 1))
-  {
-    R2 <- 0
+    tryCatch(
+      {
+        R2 <- 0
 
-    yy <- x[1:pos]
-    xx <- r[1:pos]
-    cv <- cov(xx, yy)
-    if (cv <= 0) next
-    R2 <- (cv^2) / (var(xx) * var(yy))
+        yy <- x[1:pos]
+        xx <- r[1:pos]
+        cv <- cov(xx, yy)
+        if (cv <= 0) next
+        R2 <- (cv^2) / (var(xx) * var(yy))
 
-    yy <- x[pos:n]
-    xx <- r[pos:n]
-    cv <- cov(xx, yy)
-    if (cv >= 0) next
-    R2 <- R2 + (cv^2) / (var(xx) * var(yy))
+        yy <- x[pos:n]
+        xx <- r[pos:n]
+        cv <- cov(xx, yy)
+        if (cv >= 0) next
+        R2 <- R2 + (cv^2) / (var(xx) * var(yy))
 
-    if (R2 > opt.val)
-    {
-      opt <- pos
-      opt.val <- R2
-    }
-  }
+        if (R2 > opt.val)
+        {
+          opt <- pos
+          opt.val <- R2
+        }
+      }, error = function(e) e)
 
   cv <- cov(x, r)
   R2 <- (cv^2) / (var(x) * var(r))

@@ -17,14 +17,27 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Installation
 
+```{r eval=FALSE}
+# Install last version from GitHub
+install.packages("devtools") # Install devtools if you don't have it
+devtools::install_github("efernandezpascual/seedr") # Get seedr from GitHub
+```
+
 ## Usage
 
 ```{r }
 library(seedr)
+# seedr relies on physiotime(), a wrapper function that formats your data and fits a hydro/thermal time model
 physiotime(grasses, # germination dataset
            x = "psi", # experimental treatment
            method = "bradford", # hydrotime model
            groups = c("species")) # group dataset by species
+```
+
+
+```{r eval=FALSE}
+# for more information read the seedr vignette
+vignette("seedr")
 ```
 
 ## References
