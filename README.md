@@ -53,14 +53,14 @@ physiotime(grasses, # germination dataset
 ## References
 
   - Bewley, J. D., Bradford, K. J., Hilhorst, H. W., & Nonogaki, H.
-    (2013). Thermal Time Models. In *Seeds: Physiology of Development,
-    Germination and Dormancy, 3rd Edition* (pp. 312-317). Springer, New
-    York, NY.
+    (2013). Environmental Control of Germination. In *Seeds: Physiology
+    of Development, Germination and Dormancy, 3rd Edition*
+    (pp. 302-317). Springer, New York, NY.
   - Bradford, K. J. (1990). A water relations analysis of seed
     germination rates. *Plant Physiology*, 94(2), 840-849.
   - Garcia-Huidobro, J., Monteith, J. L., & Squire, G. R. (1982). Time,
-    temperature and germination of pearl millet (Pennisetum typhoides S.
-    & H.) I. Constant temperature. *Journal of Experimental Botany*,
+    temperature and germination of pearl millet (*Pennisetum typhoides*
+    S. & H.) I. Constant temperature. *Journal of Experimental Botany*,
     33(2), 288-296.
   - Gummerson, R. J. (1986). The effect of constant temperatures and
     osmotic potentials on the germination of sugar beet. *Journal of

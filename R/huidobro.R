@@ -50,7 +50,7 @@
 #'   Botany, 37(6), 729-741.
 #' @export
 huidobro <- function(d, min.ptos = 3, tops = c("Max R2","Max value"),
-                     fractions = (1:9)/10)
+                     fractions = (1:9)/10) tryCatch(
 {
   rates <- d[, .(fraction = fractions, rate = rates(d = .SD, fractions = fractions)), by = c("treatment")]
   rates <- rates[! is.na(rates$rate)]
@@ -96,7 +96,7 @@ huidobro <- function(d, min.ptos = 3, tops = c("Max R2","Max value"),
 
   class(l) <- "huidobro"
   l
-}
+}, error = function(e) e)
 
 # huidobro generic functions
 

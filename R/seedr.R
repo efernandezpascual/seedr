@@ -11,9 +11,9 @@
 #' \code{seedr} also allows to quickly fit models to multi-seedlot or
 #' multi-species datasets.
 #' @references Bewley, J. D., Bradford, K. J., Hilhorst, H. W., & Nonogaki, H.
-#'   (2013). Thermal Time Models. In Seeds: Physiology of Development,
-#'   Germination and Dormancy, 3rd Edition (pp. 312-317). Springer, New York,
-#'   NY.
+#'   (2013). Environmental Control of Germination. In Seeds: Physiology of
+#'   Development, Germination and Dormancy, 3rd Edition (pp. 302-317). Springer,
+#'   New York, NY.
 #'
 #'   Bradford, K. J. (1990). A water relations analysis of seed germination
 #'   rates. Plant Physiology, 94(2), 840-849.

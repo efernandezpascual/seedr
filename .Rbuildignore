@@ -3,3 +3,4 @@
 ^README\.Rmd$
 ^Rprof\.out$
 ^seeds\.png$
+^LICENSE$
