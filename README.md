@@ -8,7 +8,7 @@ README.md
 <!-- badges: start -->
 
 [![Travis build
-status](https://travis-ci.com/efernandezpascual/seedr.svg?branch=master)](https://travis-ci.com/efernandezpascual/seedr)
+status](https://travis-ci.org/efernandezpascual/seedr.svg?branch=master)](https://travis-ci.com/efernandezpascual/seedr)
 <!-- badges: end -->
 
 ## Overview

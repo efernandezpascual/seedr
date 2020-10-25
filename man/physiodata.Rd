@@ -12,7 +12,7 @@ physiodata(d, t = "times", g = "germinated", pg = "germinable", x =
 data frame should include columns with scoring times, germination counts
 (not cumulative), number of potentially germinable seeds, and the
 environmental variable of interest. (e.g. temperature or water potential)
-(see \code{\link{grasses}} example dataset for appropiate structure).}
+(see \code{\link{grasses}} example dataset for appropriate structure).}
 
 \item{t}{the name of a column in \code{d} containing a vector of numeric
 scoring times.}

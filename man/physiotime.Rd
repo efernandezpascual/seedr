@@ -13,7 +13,7 @@ physiotime(d, t = "times", g = "germinated", pg = "germinable", x =
 data frame should include columns with scoring times, germination counts
 (not cumulative), number of potentially germinable seeds, and the
 environmental variable of interest. (e.g. temperature or water potential)
-(see \code{\link{grasses}} example dataset for appropiate structure).}
+(see \code{\link{grasses}} example dataset for appropriate structure).}
 
 \item{t}{the name of a column in \code{d} containing a vector of numeric
 scoring times.}
@@ -54,7 +54,7 @@ t90) as used by Garcia-Huidobro.}
 }
 \value{
 \code{physiotime} returns a S3 object of class "physiotime".
- The object is a list containing, for each group (seedlot, speciec, etc.) the
+ The object is a list containing, for each group (seedlot, species, etc.) the
  results of fitting the physiological time models.  The generic functions
   \code{summary} and \code{plot} are used to obtain and visualize the model
   results.

@@ -12,7 +12,7 @@ A data frame with 896 rows and 7 variables \describe{
   \item{dish}{Code for the Petri dish, container, replicate, etc.}
   \item{times}{Time of germination scoring since the start of the experiment,
   in days} \item{germinated}{Number of germinated seeds recorded at that
-  time} \item{germinable}{Total number of viables seeds in the replicate} }
+  time} \item{germinable}{Total number of viable seeds in the replicate} }
 }
 \source{
 Own data from a laboratory experiment.

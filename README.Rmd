@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ![](seeds.png)
 
 <!-- badges: start -->
-[![Travis build status](https://travis-ci.com/efernandezpascual/seedr.svg?branch=master)](https://travis-ci.com/efernandezpascual/seedr)
+[![Travis build status](https://travis-ci.org/efernandezpascual/seedr.svg?branch=master)](https://travis-ci.com/efernandezpascual/seedr)
 <!-- badges: end -->
 
 
