@@ -16,7 +16,6 @@ Authors@R: c(
     comment = c(ORCID = "0000-0002-4943-4358"), 
     email = "emmala@gmail.com", 
     role = "ctb"))
-Maintainer:  Fernández-Pascual, Eduardo <efernandezpascual@gmail.com>
 Description: Analysis of seed germination data
     using the physiological time modelling approach. Includes functions
     to fit hydrotime and thermal-time models with the traditional approaches
