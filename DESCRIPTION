@@ -1,8 +1,8 @@
 Package: seedr
 Type: Package
 Title: Hydro and Thermal Time Seed Germination Models in R
-Version: 0.3.0
-Date: 2020-10-25
+Version: 0.3.0.9000
+Date: 2020-11-08
 Authors@R: c(
     person("Fernández-Pascual", "Eduardo", 
     comment = c(ORCID = "0000-0002-4743-9577"),

@@ -23,7 +23,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Installation
 
 ```{r eval=FALSE}
-# Install last version from GitHub
+# Install stable version from CRAN
+install.packages("seedr")
+
+# Install last development version from GitHub
 install.packages("devtools") # Install devtools if you don't have it
 devtools::install_github("efernandezpascual/seedr") # Get seedr from GitHub
 ```
