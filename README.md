@@ -27,7 +27,10 @@ containing multiple species, seedlots or experiments.
 ## Installation
 
 ``` r
-# Install last version from GitHub
+# Install stable version from CRAN
+install.packages("seedr")
+
+# Install last development version from GitHub
 install.packages("devtools") # Install devtools if you don't have it
 devtools::install_github("efernandezpascual/seedr") # Get seedr from GitHub
 ```
